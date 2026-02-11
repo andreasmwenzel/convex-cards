@@ -29,39 +29,35 @@ A starter scaffold for a multiplayer cards app using:
 npm install
 ```
 
-2. Copy env template:
+2. Start Convex once (creates/links a dev deployment, generates `convex/_generated/*`, and writes `.env.local`):
 
 ```bash
-cp .env.example .env
+npx convex dev --once
 ```
 
-3. Fill in auth provider values:
-
-- `AUTH_GOOGLE_ID`
-- `AUTH_GOOGLE_SECRET`
-- `AUTH_RESEND_KEY`
-- `AUTH_EMAIL_FROM`
-
-4. Start Convex (first run will create/link a deployment):
-
-```bash
-npx convex dev
-```
-
-This generates `convex/_generated/*` and sets `PUBLIC_CONVEX_URL` for local dev.
-
-5. Start SvelteKit:
+3. Start SvelteKit:
 
 ```bash
 npm run dev
 ```
 
+## Auth setup
+
+See `AUTH_SETUP.md` for how to obtain and configure:
+
+- `SITE_URL`
+- `AUTH_GOOGLE_ID`
+- `AUTH_GOOGLE_SECRET`
+- `AUTH_RESEND_KEY`
+- `AUTH_EMAIL_FROM`
+
 ## Convex Auth notes
 
 - Google sign-in is configured through Convex Auth using `@auth/core/providers/google` with `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET`.
 - Magic links are configured through Convex Auth's `Email` provider with `authorize: undefined` (token-only magic-link flow).
+- `SITE_URL` controls allowed post-auth redirects and magic-link destinations.
 - If `AUTH_RESEND_KEY` / `AUTH_EMAIL_FROM` are missing, magic-link URLs are logged to console as a dev fallback.
-- Google callback URL to register in Google Cloud: `<CONVEX_URL>/api/auth/callback/google` (for local `convex dev`, use the URL shown by Convex).
+- Google callback URL to register in Google Cloud: `<CONVEX_SITE_URL>/api/auth/callback/google` (for local dev use `.env.local` `PUBLIC_CONVEX_SITE_URL`).
 
 ## Railway notes
 
@@ -71,7 +67,8 @@ Typical Railway setup:
 
 - Build command: `npm run build`
 - Start command: `npm run start`
-- Add env vars from `.env.example`
+- Add public frontend env vars from `.env.example`
+- Add Convex Auth backend env vars from `AUTH_SETUP.md`
 
 For production Convex deploy + web build pipeline:
 

@@ -4,12 +4,13 @@ import { v } from 'convex/values';
 
 export default defineSchema({
 	...authTables,
-	users: defineTable({
-		email: v.optional(v.string()),
-		name: v.optional(v.string()),
-		image: v.optional(v.string()),
-		createdAt: v.number()
-	}).index('by_email', ['email']),
+	userProfiles: defineTable({
+		userId: v.id('users'),
+		displayName: v.optional(v.string()),
+		avatarUrl: v.optional(v.string()),
+		createdAt: v.number(),
+		updatedAt: v.number()
+	}).index('by_userId', ['userId']),
 	games: defineTable({
 		hostUserId: v.id('users'),
 		status: v.union(v.literal('lobby'), v.literal('active'), v.literal('finished')),
