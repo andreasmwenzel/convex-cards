@@ -5,9 +5,23 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.AUTH_RESEND_KEY);
 
+const googleClientId = process.env.AUTH_GOOGLE_ID;
+const googleClientSecret = process.env.AUTH_GOOGLE_SECRET;
+
+if (!googleClientId || !googleClientSecret) {
+	console.warn('Google OAuth is disabled. Set AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET to enable it.');
+}
+
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 	providers: [
-		Google,
+		...(googleClientId && googleClientSecret
+			? [
+					Google({
+						clientId: googleClientId,
+						clientSecret: googleClientSecret
+					})
+				]
+			: []),
 		Email({
 			id: 'magic-link',
 			authorize: undefined,

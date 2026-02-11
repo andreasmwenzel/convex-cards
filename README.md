@@ -58,9 +58,10 @@ npm run dev
 
 ## Convex Auth notes
 
-- Google sign-in is configured through `@auth/core/providers/google`.
-- Magic links are configured through the Convex `Email` provider.
-- If email env vars are missing, magic links are logged to console as a dev fallback.
+- Google sign-in is configured through Convex Auth using `@auth/core/providers/google` with `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET`.
+- Magic links are configured through Convex Auth's `Email` provider with `authorize: undefined` (token-only magic-link flow).
+- If `AUTH_RESEND_KEY` / `AUTH_EMAIL_FROM` are missing, magic-link URLs are logged to console as a dev fallback.
+- Google callback URL to register in Google Cloud: `<CONVEX_URL>/api/auth/callback/google` (for local `convex dev`, use the URL shown by Convex).
 
 ## Railway notes
 
