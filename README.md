@@ -8,13 +8,13 @@ A starter scaffold for a multiplayer cards app using:
 - **Convex Auth** with:
   - Google OAuth
   - Email magic links (via Resend)
-- **SvelteKit Node adapter** for Railway deployment
+- **SvelteKit adapter-auto** for platform-aware deployment
 
 ## What is scaffolded
 
 - SvelteKit app initialized with `npx sv create`
 - Tailwind installed with `npx sv add tailwindcss`
-- Railway-friendly Node adapter and `npm run start`
+- SvelteKit adapter-auto config
 - Convex folder with:
   - `schema.ts` (auth tables + starter game tables)
   - `http.ts` (auth routes)
@@ -59,19 +59,24 @@ See `AUTH_SETUP.md` for how to obtain and configure:
 - If `AUTH_RESEND_KEY` / `AUTH_EMAIL_FROM` are missing, magic-link URLs are logged to console as a dev fallback.
 - Google callback URL to register in Google Cloud: `<CONVEX_SITE_URL>/api/auth/callback/google` (for local dev use `.env.local` `PUBLIC_CONVEX_SITE_URL`).
 
-## Railway notes
+## Vercel notes
 
-This repo includes `railway.json` and uses the Node adapter.
+This repo uses `@sveltejs/adapter-auto` and does not require a committed `vercel.json` by default.
 
-Typical Railway setup:
+Typical Vercel setup:
 
+- Framework preset: `SvelteKit` (auto-detected)
 - Build command: `npm run build`
-- Start command: `npm run start`
-- Add public frontend env vars from `.env.example`
-- Add Convex Auth backend env vars from `AUTH_SETUP.md`
+- Node runtime: 22.x recommended
+- Set frontend public vars in Vercel project env:
+  - Production: `PUBLIC_CONVEX_URL`, `PUBLIC_CONVEX_SITE_URL` (production Convex values)
+  - Preview: `PUBLIC_CONVEX_URL`, `PUBLIC_CONVEX_SITE_URL` (matching preview Convex values)
+- Set Convex Auth backend vars (`SITE_URL`, `AUTH_*`) in Convex deployment env, not in Vercel runtime env
 
 For production Convex deploy + web build pipeline:
 
 ```bash
 npx convex deploy --cmd-url-env-var-name PUBLIC_CONVEX_URL --cmd 'npm run build'
 ```
+
+For preview auth flows to work, align each Vercel preview environment with the matching Convex preview deployment and `SITE_URL`.

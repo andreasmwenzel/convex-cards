@@ -17,7 +17,8 @@ Set these values in your **Convex deployment environment** (not in `.env.local`)
 Use the URL where your SvelteKit app is served.
 
 - Local: `http://localhost:5173`
-- Production: your public web URL (for example Railway domain)
+- Production Convex deployment: `https://<prod-domain>`
+- Preview Convex deployment(s): `https://<project>-git-<branch>-<team>.vercel.app`
 
 ## 2. Get Google OAuth credentials
 
@@ -29,6 +30,7 @@ Use the URL where your SvelteKit app is served.
    - `<CONVEX_SITE_URL>/api/auth/callback/google`
 
 For local Convex dev, use `.env.local` `PUBLIC_CONVEX_SITE_URL` as `<CONVEX_SITE_URL>`.
+For Vercel preview auth, add the callback URI for the preview deployment(s) you want to test.
 
 Use the created values for:
 - `AUTH_GOOGLE_ID`
@@ -47,7 +49,9 @@ Use these for:
 
 ## 4. Set Convex deployment env vars
 
-Run when you are ready:
+Set values separately for each Convex deployment (local/dev/preview/production), using the matching frontend URL for `SITE_URL`.
+
+Example values:
 
 ```bash
 npx convex env set SITE_URL http://localhost:5173
@@ -67,4 +71,6 @@ npx convex env list
 
 - `PUBLIC_CONVEX_URL` / `PUBLIC_CONVEX_SITE_URL` in `.env.local` are frontend/public values used by SvelteKit.
 - Convex Auth backend settings (`SITE_URL`, `AUTH_*`) must be set via Convex environment variables.
+- On Vercel, set `PUBLIC_CONVEX_URL` / `PUBLIC_CONVEX_SITE_URL` in project environment variables for both Production and Preview.
+- Preview auth requires matching alignment between Vercel preview env vars and the corresponding Convex preview deployment env (`SITE_URL`, `AUTH_*`).
 - If `AUTH_RESEND_KEY` or `AUTH_EMAIL_FROM` are missing, this project logs magic-link URLs instead of sending email.
