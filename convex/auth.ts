@@ -5,8 +5,45 @@ import { Resend } from 'resend';
 
 const googleClientId = process.env.AUTH_GOOGLE_ID;
 const googleClientSecret = process.env.AUTH_GOOGLE_SECRET;
+const allowedRedirectOrigins = new Set(
+	(process.env.AUTH_REDIRECT_ORIGINS ?? '')
+		.split(',')
+		.map((origin) => origin.trim())
+		.filter(Boolean)
+);
+
+function isAllowedRedirectHost(hostname: string): boolean {
+	if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
+	if (hostname.endsWith('.vercel.app')) return true;
+	return false;
+}
+
+function validateRedirect(redirectTo: string): string {
+	let parsed: URL;
+	try {
+		parsed = new URL(redirectTo);
+	} catch {
+		throw new Error('Invalid redirect URL. Provide an absolute URL.');
+	}
+
+	const isLocal = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1';
+	if (!isLocal && parsed.protocol !== 'https:') {
+		throw new Error('Invalid redirect URL protocol. Use https.');
+	}
+
+	if (allowedRedirectOrigins.has(parsed.origin) || isAllowedRedirectHost(parsed.hostname)) {
+		return parsed.toString();
+	}
+
+	throw new Error(
+		`Redirect URL origin is not allowed: ${parsed.origin}. Add it to AUTH_REDIRECT_ORIGINS if needed.`
+	);
+}
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
+	callbacks: {
+		redirect: async ({ redirectTo }) => validateRedirect(redirectTo)
+	},
 	providers: [
 		...(googleClientId && googleClientSecret
 			? [

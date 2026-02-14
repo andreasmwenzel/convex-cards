@@ -6,19 +6,25 @@ This project uses Convex Auth with:
 
 Set these values in your **Convex deployment environment** (not in `.env.local`):
 
-- `SITE_URL`
 - `AUTH_GOOGLE_ID`
 - `AUTH_GOOGLE_SECRET`
 - `AUTH_RESEND_KEY`
 - `AUTH_EMAIL_FROM`
+- `AUTH_REDIRECT_ORIGINS` (optional CSV for non-`vercel.app` origins)
 
-## 1. Get `SITE_URL`
+## 1. Redirect destination behavior
 
-Use the URL where your SvelteKit app is served.
+This project uses `redirectTo` from the frontend for OAuth/magic-link return URLs.
+`convex/auth.ts` allows:
 
-- Local: `http://localhost:5173`
-- Production Convex deployment: `https://<prod-domain>`
-- Preview Convex deployment(s): `https://<project>-git-<branch>-<team>.vercel.app`
+- `localhost` / `127.0.0.1`
+- `*.vercel.app` (so branch previews work without per-branch env changes)
+- Exact origins listed in `AUTH_REDIRECT_ORIGINS`
+
+Set `AUTH_REDIRECT_ORIGINS` when you use custom domains:
+
+- Production example: `https://cards.example.com`
+- Multiple values: `https://cards.example.com,https://staging.example.com`
 
 ## 2. Get Google OAuth credentials
 
@@ -49,16 +55,16 @@ Use these for:
 
 ## 4. Set Convex deployment env vars
 
-Set values separately for each Convex deployment (local/dev/preview/production), using the matching frontend URL for `SITE_URL`.
+Set values separately for each Convex deployment (local/dev/preview/production).
 
 Example values:
 
 ```bash
-npx convex env set SITE_URL http://localhost:5173
 npx convex env set AUTH_GOOGLE_ID your-google-client-id
 npx convex env set AUTH_GOOGLE_SECRET your-google-client-secret
 npx convex env set AUTH_RESEND_KEY re_xxxxx
 npx convex env set AUTH_EMAIL_FROM "Convex Cards <noreply@yourdomain.com>"
+npx convex env set AUTH_REDIRECT_ORIGINS "http://localhost:5173,https://cards.example.com"
 ```
 
 Check what is set:
@@ -70,7 +76,7 @@ npx convex env list
 ## Notes
 
 - `PUBLIC_CONVEX_URL` / `PUBLIC_CONVEX_SITE_URL` in `.env.local` are frontend/public values used by SvelteKit.
-- Convex Auth backend settings (`SITE_URL`, `AUTH_*`) must be set via Convex environment variables.
+- Convex Auth backend settings (`AUTH_*`) must be set via Convex environment variables.
 - On Vercel, set `PUBLIC_CONVEX_URL` / `PUBLIC_CONVEX_SITE_URL` in project environment variables for both Production and Preview.
-- Preview auth requires matching alignment between Vercel preview env vars and the corresponding Convex preview deployment env (`SITE_URL`, `AUTH_*`).
+- Preview auth does not require per-branch redirect env updates when using `*.vercel.app`.
 - If `AUTH_RESEND_KEY` or `AUTH_EMAIL_FROM` are missing, this project logs magic-link URLs instead of sending email.

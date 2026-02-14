@@ -45,17 +45,17 @@ npm run dev
 
 See `AUTH_SETUP.md` for how to obtain and configure:
 
-- `SITE_URL`
 - `AUTH_GOOGLE_ID`
 - `AUTH_GOOGLE_SECRET`
 - `AUTH_RESEND_KEY`
 - `AUTH_EMAIL_FROM`
+- `AUTH_REDIRECT_ORIGINS` (optional CSV for custom domains)
 
 ## Convex Auth notes
 
 - Google sign-in is configured through Convex Auth using `@auth/core/providers/google` with `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET`.
 - Magic links are configured through Convex Auth's `Email` provider with `authorize: undefined` (token-only magic-link flow).
-- `SITE_URL` controls allowed post-auth redirects and magic-link destinations.
+- Post-auth redirects are validated in `convex/auth.ts` using `redirectTo` from the frontend.
 - If `AUTH_RESEND_KEY` / `AUTH_EMAIL_FROM` are missing, magic-link URLs are logged to console as a dev fallback.
 - Google callback URL to register in Google Cloud: `<CONVEX_SITE_URL>/api/auth/callback/google` (for local dev use `.env.local` `PUBLIC_CONVEX_SITE_URL`).
 
@@ -71,12 +71,12 @@ Typical Vercel setup:
 - Set frontend public vars in Vercel project env:
   - Production: `PUBLIC_CONVEX_URL`, `PUBLIC_CONVEX_SITE_URL` (production Convex values)
   - Preview: `PUBLIC_CONVEX_URL`, `PUBLIC_CONVEX_SITE_URL` (matching preview Convex values)
-- Set Convex Auth backend vars (`SITE_URL`, `AUTH_*`) in Convex deployment env, not in Vercel runtime env
+- Set Convex Auth backend vars (`AUTH_*`) in Convex deployment env, not in Vercel runtime env
 
 For production Convex deploy + web build pipeline:
 
 ```bash
-npx convex deploy --cmd-url-env-var-name PUBLIC_CONVEX_URL --cmd 'npm run build'
+npx convex deploy --cmd 'npm run build'
 ```
 
-For preview auth flows to work, align each Vercel preview environment with the matching Convex preview deployment and `SITE_URL`.
+For custom non-Vercel domains, add them to `AUTH_REDIRECT_ORIGINS`.

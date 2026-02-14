@@ -35,6 +35,13 @@
 		client.setAuth(async () => token);
 	}
 
+	function currentRedirectTo() {
+		if (typeof window === 'undefined') {
+			return 'http://localhost:5173/';
+		}
+		return `${window.location.origin}/`;
+	}
+
 	function setStoredTokens(tokens: { token: string; refreshToken: string } | null) {
 		authToken = tokens?.token ?? null;
 		applyClientAuth(authToken);
@@ -107,20 +114,15 @@
 		magicLinkStatus = null;
 
 		try {
+			const redirectTo = currentRedirectTo();
 			await client.action(authSignInRef as any, {
 				provider: 'email',
-				params: { email: trimmedEmail }
+				params: { email: trimmedEmail, redirectTo }
 			});
 			magicLinkStatus =
 				'Magic link requested. If Resend is not configured, check `npx convex logs` for the login URL.';
 		} catch (error) {
-			const message = error instanceof Error ? error.message : 'Failed to start magic-link sign in.';
-			if (message.includes('Missing environment variable `SITE_URL`')) {
-				magicLinkStatus =
-					'Set SITE_URL in Convex env first (example: `npx convex env set SITE_URL http://localhost:5173`).';
-			} else {
-				magicLinkStatus = message;
-			}
+			magicLinkStatus = error instanceof Error ? error.message : 'Failed to start magic-link sign in.';
 		} finally {
 			sending = false;
 		}
@@ -131,9 +133,10 @@
 		magicLinkStatus = null;
 
 		try {
+			const redirectTo = currentRedirectTo();
 			const result = (await client.action(authSignInRef as any, {
 				provider: 'google',
-				params: { redirectTo: '/' }
+				params: { redirectTo }
 			})) as SignInResult;
 
 			if (result.redirect && typeof window !== 'undefined') {
