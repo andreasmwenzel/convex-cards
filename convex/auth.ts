@@ -5,38 +5,77 @@ import { Resend } from 'resend';
 
 const googleClientId = process.env.AUTH_GOOGLE_ID;
 const googleClientSecret = process.env.AUTH_GOOGLE_SECRET;
-const allowedRedirectOrigins = new Set(
-	(process.env.AUTH_REDIRECT_ORIGINS ?? '')
-		.split(',')
-		.map((origin) => origin.trim())
-		.filter(Boolean)
-);
 
-function isAllowedRedirectHost(hostname: string): boolean {
-	if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
-	if (hostname.endsWith('.vercel.app')) return true;
-	return false;
+function getSiteOrigin() {
+	const siteUrl = process.env.SITE_URL?.trim();
+	if (!siteUrl) return null;
+
+	try {
+		return new URL(siteUrl).origin;
+	} catch {
+		throw new Error(`Invalid SITE_URL: ${siteUrl}`);
+	}
+}
+
+function deploymentEnvironment() {
+	return process.env.ENVIRONMENT?.trim().toLowerCase();
+}
+
+function isLocalHost(hostname: string) {
+	return hostname === 'localhost' || hostname === '127.0.0.1';
+}
+
+function isAllowedPreviewRedirect(redirectUrl: URL) {
+	if (deploymentEnvironment() !== 'preview') return false;
+
+	const projectName = process.env.VERCEL_PROJECT_NAME?.trim().toLowerCase();
+	const projectUrlEnding = process.env.VERCEL_PROJECT_URL_ENDING?.trim().toLowerCase();
+	if (!projectName || !projectUrlEnding) return false;
+	if (redirectUrl.protocol !== 'https:') return false;
+
+	const hostname = redirectUrl.hostname.toLowerCase();
+	return hostname.startsWith(projectName) && hostname.endsWith(projectUrlEnding);
 }
 
 function validateRedirect(redirectTo: string): string {
+	const siteOrigin = getSiteOrigin();
+	const isDev = deploymentEnvironment() === 'dev';
+
+	if (redirectTo.startsWith('/') || redirectTo.startsWith('?')) {
+		if (!siteOrigin) {
+			throw new Error(
+				'Missing SITE_URL for relative redirect. Set SITE_URL in Convex env or pass an absolute redirectTo URL.'
+			);
+		}
+		return `${siteOrigin}${redirectTo}`;
+	}
+
 	let parsed: URL;
 	try {
 		parsed = new URL(redirectTo);
 	} catch {
-		throw new Error('Invalid redirect URL. Provide an absolute URL.');
+		throw new Error('Invalid redirect URL. Provide an absolute URL or a relative path.');
 	}
 
-	const isLocal = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1';
+	const isLocal = isLocalHost(parsed.hostname);
 	if (!isLocal && parsed.protocol !== 'https:') {
 		throw new Error('Invalid redirect URL protocol. Use https.');
 	}
 
-	if (allowedRedirectOrigins.has(parsed.origin) || isAllowedRedirectHost(parsed.hostname)) {
+	if (siteOrigin && parsed.origin === siteOrigin) {
+		return parsed.toString();
+	}
+
+	if (isDev && isLocal) {
+		return parsed.toString();
+	}
+
+	if (isAllowedPreviewRedirect(parsed)) {
 		return parsed.toString();
 	}
 
 	throw new Error(
-		`Redirect URL origin is not allowed: ${parsed.origin}. Add it to AUTH_REDIRECT_ORIGINS if needed.`
+		`Redirect URL is not allowed: ${redirectTo}. It must match SITE_URL or the configured preview pattern.`
 	);
 }
 

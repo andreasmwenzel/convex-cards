@@ -38,35 +38,44 @@ Set these in Convex (not `.env.local`) for each deployment:
 - `AUTH_GOOGLE_SECRET`
 - `AUTH_RESEND_KEY`
 - `AUTH_EMAIL_FROM`
-- `AUTH_REDIRECT_ORIGINS` (optional CSV for non-Vercel domains)
+- `SITE_URL` (required primary redirect destination)
+- `VERCEL_PROJECT_NAME` (optional preview redirect fallback)
+- `VERCEL_PROJECT_URL_ENDING` (optional preview redirect fallback)
 
 ### Production Convex deployment
 
 ```bash
+npx convex env set --prod SITE_URL https://<your-prod-domain>
 npx convex env set --prod AUTH_GOOGLE_ID <id>
 npx convex env set --prod AUTH_GOOGLE_SECRET <secret>
 npx convex env set --prod AUTH_RESEND_KEY <key>
 npx convex env set --prod AUTH_EMAIL_FROM "Convex Cards <noreply@yourdomain.com>"
-npx convex env set --prod AUTH_REDIRECT_ORIGINS "https://<your-prod-domain>"
+npx convex env set --prod VERCEL_PROJECT_NAME <project-name>
+npx convex env set --prod VERCEL_PROJECT_URL_ENDING <project-url-ending>
 ```
 
 ### Preview Convex deployment (per branch)
 
 ```bash
+npx convex env set --preview-name <branch> SITE_URL https://<your-prod-domain>
 npx convex env set --preview-name <branch> AUTH_GOOGLE_ID <id>
 npx convex env set --preview-name <branch> AUTH_GOOGLE_SECRET <secret>
 npx convex env set --preview-name <branch> AUTH_RESEND_KEY <key>
 npx convex env set --preview-name <branch> AUTH_EMAIL_FROM "Convex Cards <noreply@yourdomain.com>"
+npx convex env set --preview-name <branch> VERCEL_PROJECT_NAME <project-name>
+npx convex env set --preview-name <branch> VERCEL_PROJECT_URL_ENDING <project-url-ending>
 ```
 
 ### Local/dev Convex deployment
 
 ```bash
+npx convex env set SITE_URL http://localhost:5173
 npx convex env set AUTH_GOOGLE_ID <id>
 npx convex env set AUTH_GOOGLE_SECRET <secret>
 npx convex env set AUTH_RESEND_KEY <key>
 npx convex env set AUTH_EMAIL_FROM "Convex Cards <noreply@yourdomain.com>"
-npx convex env set AUTH_REDIRECT_ORIGINS "http://localhost:5173"
+npx convex env set VERCEL_PROJECT_NAME <project-name>
+npx convex env set VERCEL_PROJECT_URL_ENDING <project-url-ending>
 ```
 
 ## 4) Google OAuth Callback URLs
@@ -86,7 +95,8 @@ Format:
 Important:
 
 - Callback is on Convex URL (`CONVEX_SITE_URL`)
-- Redirect destination comes from the frontend `redirectTo` param (validated in `convex/auth.ts`)
+- Redirect destination comes from the frontend `redirectTo` param.
+- `redirectTo` is accepted when it matches `SITE_URL`, or the preview pattern from `VERCEL_PROJECT_NAME` + `VERCEL_PROJECT_URL_ENDING`.
 
 ## 5) Local Development Workflow
 

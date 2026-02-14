@@ -45,17 +45,21 @@ npm run dev
 
 See `AUTH_SETUP.md` for how to obtain and configure:
 
+- `SITE_URL`
 - `AUTH_GOOGLE_ID`
 - `AUTH_GOOGLE_SECRET`
 - `AUTH_RESEND_KEY`
 - `AUTH_EMAIL_FROM`
-- `AUTH_REDIRECT_ORIGINS` (optional CSV for custom domains)
+- `VERCEL_PROJECT_NAME` (for preview redirect fallback)
+- `VERCEL_PROJECT_URL_ENDING` (for preview redirect fallback)
 
 ## Convex Auth notes
 
 - Google sign-in is configured through Convex Auth using `@auth/core/providers/google` with `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET`.
 - Magic links are configured through Convex Auth's `Email` provider with `authorize: undefined` (token-only magic-link flow).
-- Post-auth redirects are validated in `convex/auth.ts` using `redirectTo` from the frontend.
+- `SITE_URL` is the primary redirect base and default post-auth destination.
+- Post-auth redirects via `redirectTo` are validated in `convex/auth.ts`.
+- Preview fallback is supported when redirect host starts with `VERCEL_PROJECT_NAME` and ends with `VERCEL_PROJECT_URL_ENDING`.
 - If `AUTH_RESEND_KEY` / `AUTH_EMAIL_FROM` are missing, magic-link URLs are logged to console as a dev fallback.
 - Google callback URL to register in Google Cloud: `<CONVEX_SITE_URL>/api/auth/callback/google` (for local dev use `.env.local` `PUBLIC_CONVEX_SITE_URL`).
 
@@ -71,7 +75,7 @@ Typical Vercel setup:
 - Set frontend public vars in Vercel project env:
   - Production: `PUBLIC_CONVEX_URL`, `PUBLIC_CONVEX_SITE_URL` (production Convex values)
   - Preview: `PUBLIC_CONVEX_URL`, `PUBLIC_CONVEX_SITE_URL` (matching preview Convex values)
-- Set Convex Auth backend vars (`AUTH_*`) in Convex deployment env, not in Vercel runtime env
+- Set Convex Auth backend vars (`SITE_URL`, `AUTH_*`, `VERCEL_PROJECT_*`) in Convex deployment env, not in Vercel runtime env
 
 For production Convex deploy + web build pipeline:
 
@@ -79,4 +83,4 @@ For production Convex deploy + web build pipeline:
 npx convex deploy --cmd 'npm run build'
 ```
 
-For custom non-Vercel domains, add them to `AUTH_REDIRECT_ORIGINS`.
+For preview redirect fallback, set `VERCEL_PROJECT_NAME` and `VERCEL_PROJECT_URL_ENDING` in Convex env.
