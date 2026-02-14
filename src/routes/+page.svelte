@@ -15,9 +15,11 @@
 	const authSignInRef = anyApi.auth.signIn;
 	const authSignOutRef = anyApi.auth.signOut;
 	const usersCurrentRef = anyApi.users.current;
+	const helloEnvironmentRef = anyApi.hello.environment;
 
 	const client = useConvexClient();
 	const currentUser = useQuery(usersCurrentRef as any, {} as any);
+	const helloEnvironment = useQuery(helloEnvironmentRef as any, {} as any);
 
 	let authToken = $state<string | null>(null);
 	let authInitialized = $state(false);
@@ -240,3 +242,15 @@
 		{/if}
 	</section>
 </main>
+
+<div
+	class="fixed right-4 bottom-4 rounded-md border border-slate-300 bg-white/95 px-3 py-2 text-xs text-slate-700 shadow-sm backdrop-blur"
+>
+	{#if helloEnvironment.isLoading}
+		convex: loading...
+	{:else if helloEnvironment.error}
+		convex: unavailable
+	{:else}
+		{helloEnvironment.data?.message} ({helloEnvironment.data?.environment ?? 'dev'})
+	{/if}
+</div>
