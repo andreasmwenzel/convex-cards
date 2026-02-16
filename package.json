@@ -11,6 +11,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"convex:dev": "convex dev",
+		"convex:dev:agent": "env -u CONVEX_DEPLOYMENT CONVEX_AGENT_MODE=anonymous convex dev",
+		"codegen:agent": "env -u CONVEX_DEPLOYMENT CONVEX_AGENT_MODE=anonymous convex codegen",
 		"convex:deploy": "convex deploy"
 	},
 	"devDependencies": {

@@ -8,9 +8,24 @@
 	import UnauthedUI from '$lib/components/auth/UnauthedUI.svelte';
 	import { useAuth } from '$lib/components/auth/useAuth.svelte';
 
-	const auth = useAuth(PUBLIC_CONVEX_URL);
-	setAuthContext(auth);
-	const helloEnvironment = useQuery(api.hello.environment, () => (PUBLIC_CONVEX_URL ? {} : 'skip'));
+	const convexUrl =
+		PUBLIC_CONVEX_URL && PUBLIC_CONVEX_URL !== 'null' ? PUBLIC_CONVEX_URL : undefined;
+
+	const auth = convexUrl ? useAuth(convexUrl) : null;
+	if (auth) {
+		setAuthContext(auth);
+	}
+
+	const helloEnvironment = convexUrl
+		? useQuery(api.hello.environment, () => (convexUrl ? {} : 'skip'))
+		: {
+				isLoading: false,
+				error: null,
+				data: {
+					message: 'convex: disabled',
+					environment: 'local'
+				}
+			};
 </script>
 
 <main class="mx-auto flex min-h-screen w-full max-w-3xl flex-col items-center justify-center gap-8 px-6 py-12">
@@ -21,11 +36,11 @@
 	</section>
 
 	<section class="w-full max-w-md">
-		{#if !PUBLIC_CONVEX_URL}
+		{#if !convexUrl}
 			<div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
 				Set <code>PUBLIC_CONVEX_URL</code> to enable authentication.
 			</div>
-		{:else if auth.isLoading}
+		{:else if !auth || auth.isLoading}
 			<div class="text-lg text-slate-600">Loading...</div>
 		{:else if auth.currentUser.error}
 			<div class="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">

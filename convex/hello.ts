@@ -7,7 +7,7 @@ function readEnvironment(): ConvexEnvironment {
 	if (value === 'dev' || value === 'preview' || value === 'prod') {
 		return value;
 	}
-	throw new Error('Missing or invalid ENVIRONMENT. Set ENVIRONMENT to dev, preview, or prod.');
+	return 'dev';
 }
 
 export const environment = query({
