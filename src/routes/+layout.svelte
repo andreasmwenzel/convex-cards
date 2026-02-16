@@ -6,8 +6,11 @@
 
 	let { children } = $props();
 
-	if (PUBLIC_CONVEX_URL) {
-		setupConvex(PUBLIC_CONVEX_URL);
+	const convexUrl =
+		PUBLIC_CONVEX_URL && PUBLIC_CONVEX_URL !== 'null' ? PUBLIC_CONVEX_URL : undefined;
+
+	if (convexUrl) {
+		setupConvex(convexUrl);
 	}
 </script>
 
